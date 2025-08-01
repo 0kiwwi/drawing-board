@@ -63,7 +63,7 @@ class DrawGrid(QFrame):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.setFont(QFont("Courier", CELL_SIZE - 2))
+        painter.setFont(QFont("Monospace"))
         painter.setPen(Qt.black)
         for y in range(GRID_SIZE):
             for x in range(GRID_SIZE):
@@ -84,6 +84,10 @@ class DrawGrid(QFrame):
             painter.drawLine(x * CELL_SIZE, 0, x * CELL_SIZE, GRID_SIZE * CELL_SIZE)
         for y in range(GRID_SIZE + 1):
             painter.drawLine(0, y * CELL_SIZE, GRID_SIZE * CELL_SIZE, y * CELL_SIZE)
+
+    def reset_grid(self):
+        self.grid = [[DEFAULT_CHAR for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+        self.update()  # trigger a repaint to clear the grid
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -119,12 +123,22 @@ class MainWindow(QMainWindow):
         save_btn.clicked.connect(self.save)
         save_btn.setShortcut("Ctrl+S")
 
+        # reset button
+        reset_btn = QPushButton("Reset (Ctrl + R)")
+        reset_btn.clicked.connect(self.grid_widget.reset_grid)
+        reset_btn.setShortcut("Ctrl+R")
+
+        # buttons layout
+        btn_layout = QHBoxLayout()
+        btn_layout.addWidget(save_btn)
+        btn_layout.addWidget(reset_btn)
+
         # Main layout
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.addLayout(char_layout)
         main_layout.addWidget(canvas_frame)
-        main_layout.addWidget(save_btn)
+        main_layout.addLayout(btn_layout)
 
         container = QWidget()
         container.setLayout(main_layout)
@@ -146,6 +160,9 @@ class MainWindow(QMainWindow):
             with open(filename, "w") as f:
                 for row in self.grid_widget.grid:
                     f.write(''.join(row) + '\n')
+
+    def reset_grid(self):
+        self.grid_widget.reset_grid()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
